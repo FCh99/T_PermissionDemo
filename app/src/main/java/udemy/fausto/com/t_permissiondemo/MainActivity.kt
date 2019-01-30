@@ -20,9 +20,9 @@ private const val PERMISSION_REQUEST = 10
 class MainActivity : AppCompatActivity() {
 
     private lateinit var context: Context
-    private var permissions = arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.READ_EXTERNAL_STORAGE )
 
-
+    private var permissions =
+        arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.READ_EXTERNAL_STORAGE)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,16 +35,14 @@ class MainActivity : AppCompatActivity() {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-                if (checkPermission(this, permissions)) {
+                if (checkPermission(permissions)) {
                     Toast.makeText(this, "Permission already provided", Toast.LENGTH_LONG).show()
 
-                    } else {  // I don´t have permissions yet and new version
+                } else {  // I don´t have permissions yet and new version
 
-                        requestPermissions(permissions, PERMISSION_REQUEST)
-                    }
-            }
-
-            else {  // is an old SDK
+                    requestPermissions(permissions, PERMISSION_REQUEST)
+                }
+            } else {  // is an old SDK
                 Toast.makeText(this, "Permission already provided", Toast.LENGTH_LONG).show()
             }
         }
@@ -65,18 +63,19 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
-
-
     }
 
-    fun checkPermission(context: Context, permissionArray: Array<String>) : Boolean {
+   private fun checkPermission(permissionArray: Array<String>): Boolean {
 
+        var allSuccess = true
 
-
-
-        return false
+        for (i in permissionArray.indices) {
+            if (checkCallingOrSelfPermission(permissionArray[i]) == PackageManager.PERMISSION_DENIED)
+                allSuccess = false
+        }
+        return allSuccess
     }
+
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -88,17 +87,26 @@ class MainActivity : AppCompatActivity() {
                 if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
                     allSuccess = false
 
+                    var requestAgain =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && shouldShowRequestPermissionRationale(
+                            permissions[i]
+                        )
+                    if (requestAgain) {
+                        Toast.makeText(this, "Permission Denied", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this, "Go to settings ana enable permission to operate", Toast.LENGTH_LONG)
+                            .show()
+                    }
 
-
-                    var requestAgain = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && shouldShowRequestPermissionRationale(permissions[i])
-                    
 
                 }
+                if (allSuccess) {
+                    Toast.makeText(this, "Permission Granted", Toast.LENGTH_LONG).show()
+                }
+
             }
 
         }
 
     }
-
-
 }
